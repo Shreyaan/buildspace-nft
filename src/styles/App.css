@@ -46,6 +46,7 @@
   font-size: 16px;
   font-weight: bold;
   color: white;
+  margin: 0 2vw;
 }
 
 .connect-wallet-button {
@@ -69,6 +70,17 @@
   color: white;
   font-size: 18px;
   font-weight: bold;
+}
+
+.defalut{
+  text-decoration: underline;
+  cursor: pointer;
+  color: rgb(255, 255, 255);
+
+}
+
+.defalut:hover{
+  color: #cecece;
 }
 
 .footer-container {
