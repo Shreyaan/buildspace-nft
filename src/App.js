@@ -13,7 +13,7 @@ const OPENSEA_LINK = "";
 const TOTAL_MINT_COUNT = 50;
 
 // I moved the contract address to the top for easy access.
-const CONTRACT_ADDRESS = "0x51dcDE2B230c986F59a27b3f36A94603746716f5";
+const CONTRACT_ADDRESS = "0xa7b3779707FFbAd59b0ea5daecE11474404bd6E9";
 
 function OpenSeaLink(props) {
   let link = props.openSeaLinkState
@@ -197,7 +197,7 @@ const App = () => {
         Mint NFT
       </button>
       <button
-      onClick={()=>window.location.href="https://testnets.opensea.io/collection/squarenft-ybvedmcx7s"}
+      onClick={()=>window.location.href="https://testnets.opensea.io/collection/squarenft-apjfb2m9ta"}
         href="https://testnets.opensea.io/collection/squarenft-ybvedmcx7s"
         className="cta-button connect-wallet-button"
       >
