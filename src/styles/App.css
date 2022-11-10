@@ -80,6 +80,10 @@
 
 }
 
+.cant{
+  cursor:not-allowed
+}
+
 .defalut:hover{
   color: #cecece;
 }

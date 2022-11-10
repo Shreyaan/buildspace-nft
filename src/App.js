@@ -9,20 +9,21 @@ import "react-toastify/dist/ReactToastify.css";
 
 const TWITTER_HANDLE = "_buildspace";
 const TWITTER_LINK = `https://twitter.com/${TWITTER_HANDLE}`;
-const OPENSEA_LINK = "";
+const OPENSEA_LINK =
+  "https://testnets.opensea.io/collection/squarenft-hxp6tyqbww";
 const TOTAL_MINT_COUNT = 50;
 
 // I moved the contract address to the top for easy access.
-const CONTRACT_ADDRESS = "0xa7b3779707FFbAd59b0ea5daecE11474404bd6E9";
+const CONTRACT_ADDRESS = "0xFc2064Ec74143754A454002b8dcA62542A716595";
 
 function OpenSeaLink(props) {
-  let link = props.openSeaLinkState
+  let link = props.openSeaLinkState;
   return (
-    <p >
+    <p>
       Hey there! We've minted your NFT and sent it to your wallet. It may be
-      blank right now. It can take a max of 10 min to show up on OpenSea.  {' '}
-      <a target='_blank' className="defalut" href={`${props.openSeaLinkState}`} >
-       Here's the link
+      blank right now. It can take a max of 10 min to show up on OpenSea.{" "}
+      <a target="_blank" className="defalut" href={`${props.openSeaLinkState}`}>
+        Here's the link
       </a>
     </p>
   );
@@ -31,7 +32,8 @@ function OpenSeaLink(props) {
 const App = () => {
   const [currentAccount, setCurrentAccount] = useState("");
   const [openSeaLinkState, setOpenSeaLink] = useState(false);
-  const [ispromiseDone, setIspromiseDone] = useState(false)
+  const [ispromiseDone, setIspromiseDone] = useState(false);
+  const [numOfTokensMinted, setNumOfTokensMinted] = useState(0);
   // const openSeaLink = useRef('')
 
   const checkIfWalletIsConnected = async () => {
@@ -73,7 +75,6 @@ const App = () => {
       console.log("Connected to chain " + chainId);
       const goerliChainId = "0x5";
       if (chainId !== goerliChainId) {
-       
         toast.error("You are not connected to the Goerli Test Network!", {
           position: "top-right",
           autoClose: 5000,
@@ -83,7 +84,7 @@ const App = () => {
           draggable: true,
           progress: undefined,
           theme: "light",
-          });
+        });
         return;
       }
 
@@ -117,7 +118,10 @@ const App = () => {
           myEpicNft.abi,
           signer
         );
+        let numOfToekns = await connectedContract.getTotalNFTsMintedSoFar(1);
 
+        setNumOfTokensMinted(parseInt(numOfToekns, 16));
+        // console.log(parseInt(numOfToekns, 16)-1);
         // THIS IS THE MAGIC SAUCE.
         // This will essentially "capture" our event when our contract throws it.
         // If you're familiar with webhooks, it's very similar to that!
@@ -151,22 +155,41 @@ const App = () => {
           myEpicNft.abi,
           signer
         );
-          setIspromiseDone(false)
+
+        let numOfToekns = await connectedContract.getTotalNFTsMintedSoFar(1);
+        if (numOfToekns >= TOTAL_MINT_COUNT) {
+          toast.error(
+            "You can not mint more nfts because limit has been reached",
+            {
+              position: "top-right",
+              autoClose: 5000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+              theme: "light",
+            }
+          );
+          return;
+        }
+        setIspromiseDone(false);
         console.log("Going to pop wallet now to pay gas...");
         let nftTxn = await connectedContract.makeAnEpicNFT();
 
         console.log("Mining...please wait.");
-        let res= await toast.promise(nftTxn.wait(), {
+        let res = await toast.promise(nftTxn.wait(), {
           pending: "Mining your NFT ",
           success: "Mined successfully ✅",
           error: "something went wrong 😭",
         });
         console.log(res);
-        setIspromiseDone(true)
+        setIspromiseDone(true);
         console.log(nftTxn);
         console.log(
           `Mined, see transaction: https://rinkeby.etherscan.io/tx/${nftTxn.hash}`
         );
+        setNumOfTokensMinted(numOfTokensMinted + 1);
       } else {
         console.log("Ethereum object doesn't exist!");
       }
@@ -188,17 +211,41 @@ const App = () => {
     </button>
   );
 
-  const renderMintUI = () => (
-    <div>
+  function MintNftButton(props) {
+    return (
       <button
-        onClick={askContractToMintNft}
-        className="cta-button connect-wallet-button"
+        onClick={props.askContractToMintNft}
+        className="cta-button connect-wallet-button "
       >
         Mint NFT
       </button>
+    );
+  }
+  function CantMintNftButton(props) {
+    return (
       <button
-      onClick={()=>window.location.href="https://testnets.opensea.io/collection/squarenft-apjfb2m9ta"}
-        href="https://testnets.opensea.io/collection/squarenft-ybvedmcx7s"
+        onClick={props.askContractToMintNft}
+        className="cta-button connect-wallet-button cant "
+      >
+        <s>Mint NFT</s>
+      </button>
+    );
+  }
+  const renderMintUI = () => (
+    <div>
+      {numOfTokensMinted >= TOTAL_MINT_COUNT ?  (
+        <CantMintNftButton
+          askContractToMintNft={askContractToMintNft}
+        ></CantMintNftButton>
+      ) : (
+        <MintNftButton
+          askContractToMintNft={askContractToMintNft}
+        ></MintNftButton>
+      ) }
+
+      <button
+        onClick={() => (window.location.href = { OPENSEA_LINK })}
+        href={OPENSEA_LINK}
         className="cta-button connect-wallet-button"
       >
         Collection link
@@ -220,19 +267,18 @@ const App = () => {
             : renderMintUI()}
         </div>
 
-      
         <div className="sub-text maxw">
-          {ispromiseDone &&
-              <OpenSeaLink openSeaLinkState={openSeaLinkState}/>}
+          {ispromiseDone && <OpenSeaLink openSeaLinkState={openSeaLinkState} />}
         </div>
         <div className="footer-container">
-         
-          {/* <a
+          <a
             className="footer-text"
-            href='https://testnets.opensea.io/collection/squarenft-ybvedmcx7s'
+            href={OPENSEA_LINK}
             target="_blank"
             rel="noreferrer"
-          >{`openseas NFT Collection link`}</a> */}
+          >
+            Number of minted tokens: {numOfTokensMinted} / {TOTAL_MINT_COUNT}
+          </a>
         </div>
       </div>
     </div>
